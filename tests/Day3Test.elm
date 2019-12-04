@@ -75,16 +75,16 @@ suite =
                 \_ ->
                     solvePart1 problem |> equal (Just 2050)
             ]
-
-        --        , describe "Part2 Examples"
-        --            [ test "First Example" <|
-        --                \_ -> solvePart2 example1 |> equal (Just 30)
-        --            , test "Second Example" <|
-        --                \_ -> solvePart2 example2 |> equal (Just 610)
-        --            , test "Third Example" <|
-        --                \_ -> solvePart2 example3 |> equal (Just 410)
-        --            , test "Question Part 2" <|
-        --                \_ ->
-        --                    solvePart2 problem |> equal Nothing
-        --            ]
+        , skip <|
+            describe "Part2 Examples"
+                [ test "First Example" <|
+                    \_ -> solvePart2 example1 |> equal (Just 30)
+                , test "Second Example" <|
+                    \_ -> solvePart2 example2 |> equal (Just 610)
+                , test "Third Example" <|
+                    \_ -> solvePart2 example3 |> equal (Just 410)
+                , test "Question Part 2" <|
+                    \_ ->
+                        solvePart2 problem |> equal Nothing
+                ]
         ]
