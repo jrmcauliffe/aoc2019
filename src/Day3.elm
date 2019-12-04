@@ -1,4 +1,4 @@
-module Day3 exposing (Direction(..), Distance, Line, Point, detectCrossing, parse, parseList, closestIntersection, solvePart2, toLine, toLines)
+module Day3 exposing (Direction(..), Distance, Line, Point, closestIntersection, detectCrossing, parse, parseList, solvePart2, toLine, toLines)
 
 import Tuple exposing (first, second)
 
@@ -55,7 +55,11 @@ parse s =
         _ ->
             Nothing
 
+
+
 -- Convert starting point and direction/distance into a line
+
+
 toLine : Point -> ( Direction, Distance ) -> Line
 toLine point ( direction, distance ) =
     case direction of
@@ -72,7 +76,10 @@ toLine point ( direction, distance ) =
             ( point, ( first point + distance, second point ) )
 
 
+
 -- For a starting point and list of directions/distances, create a set of lines representing this
+
+
 toLines : Point -> List ( Direction, Distance ) -> List Line
 toLines point l =
     case l of
@@ -87,7 +94,10 @@ toLines point l =
             []
 
 
+
 -- Dectect if two lines cross and return crossing point if the do
+
+
 detectCrossing : Line -> Line -> Maybe Point
 detectCrossing ( ( x1, y1 ), ( x2, y2 ) ) ( ( x3, y3 ), ( x4, y4 ) ) =
     if between x3 x4 x1 && between x3 x4 x2 && between y1 y2 y3 && between y1 y2 y4 then
@@ -100,12 +110,19 @@ detectCrossing ( ( x1, y1 ), ( x2, y2 ) ) ( ( x3, y3 ), ( x4, y4 ) ) =
         Nothing
 
 
+
 -- Is an integer between two other integers?
+
+
 between : Int -> Int -> Int -> Bool
 between a b m =
     ((m > a) && (m < b)) || ((m > b) && (m < a))
 
+
+
 -- Find the closest intersection between two paths
+
+
 closestIntersection : ( String, String ) -> Maybe Int
 closestIntersection t =
     let
