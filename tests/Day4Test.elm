@@ -26,16 +26,16 @@ suite =
             ]
         , describe "isValidAdv Test"
             [ test "Example 1" <|
-                \_ -> 112233 |> isValidAdv |> equal True
+                \_ -> 112233 |> isValidPart2 |> equal True
             , test "Example 2" <|
-                \_ -> 123444 |> isValidAdv |> equal False
+                \_ -> 123444 |> isValidPart2 |> equal False
             , test "Example 3" <|
-                \_ -> 111122 |> isValidAdv |> equal True
+                \_ -> 111122 |> isValidPart2 |> equal True
             ]
         , describe "validRange Test"
             [ test "Problem Part 1" <|
                 \_ -> problem |> validKeys isValid |> List.length |> equal 1660
             , test "Problem Part 2" <|
-                \_ -> problem |> validKeys isValidAdv |> List.length |> equal 1135
+                \_ -> problem |> validKeys isValidPart2 |> List.length |> equal 1135
             ]
         ]

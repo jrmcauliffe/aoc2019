@@ -1,4 +1,4 @@
-module Day4 exposing (isValid, isValidAdv, validKeys)
+module Day4 exposing (isValid, isValidPart2, validKeys)
 
 import Array exposing (..)
 
@@ -8,19 +8,13 @@ import Array exposing (..)
 
 
 isValid : Int -> Bool
-isValid i =
-    let
-        l =
-            String.fromInt i |> String.toList |> List.map (\c -> String.fromChar c) |> List.filterMap (\s -> String.toInt s)
-    in
-    lengthTest l
-        && ascendingTest l
-        && adjacentTest l
+isValid =
+    isValidBase (\l -> l |> groupFilter (\x -> List.length x > 1))
 
 
-isValidAdv : Int -> Bool
-isValidAdv =
-    isValidBase adjacentTestAdv
+isValidPart2 : Int -> Bool
+isValidPart2 =
+    isValidBase (\l -> l |> groupFilter (\x -> List.length x == 2))
 
 
 isValidBase : (List Int -> Bool) -> Int -> Bool
@@ -57,22 +51,9 @@ ascendingTest l =
             True
 
 
-
--- Each list must have at least one matching consecutive digits
-
-
-adjacentTest : List Int -> Bool
-adjacentTest l =
-    l |> groupMatching |> List.filter (\x -> List.length x > 1) |> List.length |> (<) 0
-
-
-
--- Each list must not have three consecutive digits
-
-
-adjacentTestAdv : List Int -> Bool
-adjacentTestAdv l =
-    l |> groupMatching |> List.filter (\x -> List.length x == 2) |> List.length |> (<) 0
+groupFilter : (List Int -> Bool) -> List Int -> Bool
+groupFilter f =
+    \l -> l |> groupMatching |> List.filter f |> List.length |> (<) 0
 
 
 groupMatching : List Int -> List (List Int)
@@ -89,7 +70,7 @@ groupMatching l =
             []
 
 
-takeWhile : (Int -> Bool) -> List Int -> List Int
+takeWhile : (a -> Bool) -> List a -> List a
 takeWhile f l =
     case l of
         x :: xs ->
