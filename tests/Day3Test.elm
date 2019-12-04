@@ -66,14 +66,14 @@ suite =
             ]
         , describe "Part1 Examples"
             [ test "First Example" <|
-                \_ -> solvePart1 example1 |> equal (Just 6)
+                \_ -> closestIntersection example1 |> equal (Just 6)
             , test "Second Example" <|
-                \_ -> solvePart1 example2 |> equal (Just 159)
+                \_ -> closestIntersection example2 |> equal (Just 159)
             , test "Third Example" <|
-                \_ -> solvePart1 example3 |> equal (Just 135)
+                \_ -> closestIntersection example3 |> equal (Just 135)
             , test "Question Part 1" <|
                 \_ ->
-                    solvePart1 problem |> equal (Just 2050)
+                    closestIntersection problem |> equal (Just 2050)
             ]
         , skip <|
             describe "Part2 Examples"
