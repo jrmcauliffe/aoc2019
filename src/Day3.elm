@@ -1,4 +1,4 @@
-module Day3 exposing (Direction(..), Distance, Line, Point, parse, parseList, toLine, toLines, detectCrossing, solvePart1, solvePart2)
+module Day3 exposing (Direction(..), Distance, Line, Point, detectCrossing, parse, parseList, solvePart1, solvePart2, toLine, toLines)
 
 import Tuple exposing (first, second)
 
@@ -21,10 +21,13 @@ type alias Point =
 type alias Line =
     ( Point, Point )
 
-parseList: String -> List ( Direction, Distance )
+
+parseList : String -> List ( Direction, Distance )
 parseList s =
     String.split "," s
-    |> List.filterMap parse
+        |> List.filterMap parse
+
+
 
 -- Convert a single direction string to a typed representation
 
@@ -48,6 +51,7 @@ parse s =
 
                 _ ->
                     Nothing
+
         _ ->
             Nothing
 
@@ -67,35 +71,53 @@ toLine point ( direction, distance ) =
         Right ->
             ( point, ( first point + distance, second point ) )
 
-toLines : Point -> List (Direction, Distance) -> List Line
-toLines  point l = case l of
-    x :: xs -> let new = (toLine point x) in new :: (toLines (second new) xs)
-    [] -> []
 
+toLines : Point -> List ( Direction, Distance ) -> List Line
+toLines point l =
+    case l of
+        x :: xs ->
+            let
+                new =
+                    toLine point x
+            in
+            new :: toLines (second new) xs
 
+        [] ->
+            []
 
 
 detectCrossing : Line -> Line -> Maybe Point
 detectCrossing ( ( x1, y1 ), ( x2, y2 ) ) ( ( x3, y3 ), ( x4, y4 ) ) =
-  if (between x3 x4 x1 && between x3 x4 x2 && between y1 y2 y3  && between y1 y2 y4) then Just (x1, y3) else
-  if ( between y3 y4 y1  && between y3 y4 y2 && between x1 x2 x3 && between x1 x2 x4) then Just (x3, y1) else
-  Nothing
+    if between x3 x4 x1 && between x3 x4 x2 && between y1 y2 y3 && between y1 y2 y4 then
+        Just ( x1, y3 )
 
+    else if between y3 y4 y1 && between y3 y4 y2 && between x1 x2 x3 && between x1 x2 x4 then
+        Just ( x3, y1 )
+
+    else
+        Nothing
 
 
 between : Int -> Int -> Int -> Bool
 between a b m =
-    ((m > a) && (m < b))|| ((m > b) && (m < a))
+    ((m > a) && (m < b)) || ((m > b) && (m < a))
 
-solvePart1 : (String, String) -> Maybe Int
+
+solvePart1 : ( String, String ) -> Maybe Int
 solvePart1 t =
- let a = first t |> parseList |>  toLines ( 0, 0 )
-     b = second t |> parseList |>  toLines ( 0, 0 )
- in
- List.concatMap (\x -> List.filterMap (\y -> detectCrossing x y) a ) b
-  |> List.map (\x -> (abs (first x)) + (abs(second x)))
-  |> List.sort
-  |> List.head
+    let
+        a =
+            first t |> parseList |> toLines ( 0, 0 )
 
-solvePart2 : (String, String) -> Maybe Int
-solvePart2 = solvePart1
+        b =
+            second t |> parseList |> toLines ( 0, 0 )
+    in
+    List.concatMap (\x -> List.filterMap (\y -> detectCrossing x y) a) b
+        |> List.map (\x -> abs (first x) + abs (second x))
+        |> List.sort
+        |> List.head
+
+
+solvePart2 : ( String, String ) -> Maybe Int
+solvePart2 =
+    solvePart1

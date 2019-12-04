@@ -8,3 +8,5 @@ repl-temp-*
 index.html
 elm.js
 elm.min.js
+# vim
+*.swp
