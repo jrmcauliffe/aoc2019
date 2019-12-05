@@ -1,4 +1,4 @@
-module Day3 exposing (Direction(..), Distance, Line, Point, closestIntersection, detectCrossing, parse, parseList, shortestPath, toLine, toLines)
+module Day3 exposing (Direction(..), Distance, Line, Point, closestIntersection, detectCrossing, parse, parseList, solvePart2, toLine, toLines)
 
 import Tuple exposing (first, second)
 
@@ -137,9 +137,7 @@ closestIntersection t =
         |> List.sort
         |> List.head
 
-length : Line -> Int
-length ((x1, y1),(x2,y2)) = (abs (x1 + x2)) + (abs (y1 + y2))
 
-shortestPath : ( String, String ) -> Maybe Int
-shortestPath =
+solvePart2 : ( String, String ) -> Maybe Int
+solvePart2 =
     closestIntersection

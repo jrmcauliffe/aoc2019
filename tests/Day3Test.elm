@@ -78,13 +78,13 @@ suite =
         , skip <|
             describe "Part2 Examples"
                 [ test "First Example" <|
-                    \_ -> shortestPath example1 |> equal (Just 30)
+                    \_ -> solvePart2 example1 |> equal (Just 30)
                 , test "Second Example" <|
-                    \_ -> shortestPath example2 |> equal (Just 610)
+                    \_ -> solvePart2 example2 |> equal (Just 610)
                 , test "Third Example" <|
-                    \_ -> shortestPath example3 |> equal (Just 410)
+                    \_ -> solvePart2 example3 |> equal (Just 410)
                 , test "Question Part 2" <|
                     \_ ->
-                        shortestPath problem |> equal Nothing
+                        solvePart2 problem |> equal Nothing
                 ]
         ]
