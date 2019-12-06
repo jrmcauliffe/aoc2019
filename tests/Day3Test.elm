@@ -75,7 +75,8 @@ suite =
                 \_ ->
                     closestIntersection problem |> equal (Just 2050)
             ]
-        , describe "Part2 Examples"
+        , skip <|
+            describe "Part2 Examples"
                 [ test "First Example" <|
                     \_ -> shortestPath example1 |> equal (Just 30)
                 , test "Second Example" <|

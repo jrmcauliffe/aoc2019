@@ -60,7 +60,7 @@ suite =
             ]
         , describe "Part1 Examples"
             [ test "First Example" <|
-                \_ -> parse example0 |> run (Just 62) [] 0 |> second |> equal [62]
+                \_ -> parse example0 |> run (Just 62) [] 0 |> second |> equal [ 62 ]
             , test "Sixth Example" <|
                 \_ -> parse example6 |> run Nothing [] 0 |> first |> equal (Array.fromList [ 1101, 100, -1, 4, 99 ])
             , test "Day 2 problem" <|
@@ -68,14 +68,14 @@ suite =
             , test "Problem part 1" <|
                 \_ -> parse problem |> run (Just 1) [] 0 |> second |> equal []
             , test "Adhoc" <|
-                \_ -> parse "1,1,2,4,0" |> run (Just 1) [1] 0 |> first |> equal (Array.fromList [ 1, 1, 2, 4, 3 ])
+                \_ -> parse "1,1,2,4,0" |> run (Just 1) [ 1 ] 0 |> first |> equal (Array.fromList [ 1, 1, 2, 4, 3 ])
             , test "Direct Add" <|
-                \_ -> parse "1101,3,3,4,0" |> run (Just 1) [1] 0 |> first |> equal (Array.fromList [ 1101, 3, 3, 4, 6 ])
+                \_ -> parse "1101,3,3,4,0" |> run (Just 1) [ 1 ] 0 |> first |> equal (Array.fromList [ 1101, 3, 3, 4, 6 ])
             , test "Direct Multiply" <|
-                \_ -> parse "1102,3,3,4,0" |> run (Just 1) [1] 0 |> first |> equal (Array.fromList [ 1102, 3, 3, 4, 9 ])
+                \_ -> parse "1102,3,3,4,0" |> run (Just 1) [ 1 ] 0 |> first |> equal (Array.fromList [ 1102, 3, 3, 4, 9 ])
             , test "Indirect Add" <|
-                \_ -> parse "1,4,5,6,6,6,0" |> run (Just 1) [1] 0 |> first |> equal (Array.fromList [ 1, 4, 5, 6, 6, 6, 12 ])
+                \_ -> parse "1,4,5,6,6,6,0" |> run (Just 1) [ 1 ] 0 |> first |> equal (Array.fromList [ 1, 4, 5, 6, 6, 6, 12 ])
             , test "Indirect Multiply" <|
-                \_ -> parse "2,4,5,6,6,6,0" |> run (Just 1) [1] 0 |> first |> equal (Array.fromList [ 2, 4, 5, 6, 6, 6, 36 ])
+                \_ -> parse "2,4,5,6,6,6,0" |> run (Just 1) [ 1 ] 0 |> first |> equal (Array.fromList [ 2, 4, 5, 6, 6, 6, 36 ])
             ]
         ]

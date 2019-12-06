@@ -96,8 +96,15 @@ run input output pc program =
 
         ( 4, ( d1, _, _ ) ) ->
             -- if non-zero output halt for debugging
-            let o = ((getVal (pc + 1) d1 program)) in
-            if o > 0 then ( program, o:: output ) else run input (o :: output) (pc + 2) program
+            let
+                o =
+                    getVal (pc + 1) d1 program
+            in
+            if o > 0 then
+                ( program, o :: output )
+
+            else
+                run input (o :: output) (pc + 2) program
 
         _ ->
             ( program, output )
