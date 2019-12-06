@@ -138,8 +138,23 @@ closestIntersection t =
         |> List.head
 
 length : Line -> Int
-length ((x1, y1),(x2,y2)) = (abs (x1 + x2)) + (abs (y1 + y2))
+length ((x1, y1),(x2,y2)) = (abs (x1 - x2)) + (abs (y1 - y2))
+
+aggLength: List Line -> List (Line, Int)
+aggLength l = l |> List.map (\x -> (x, length x))
+
+cumSum : number -> List number -> List number
+cumSum i l = case l of
+   x :: xs -> (i + x) :: cumSum (i + x) xs
+   _ -> []
 
 shortestPath : ( String, String ) -> Maybe Int
-shortestPath =
-    closestIntersection
+shortestPath t =
+    let
+        a =
+            first t |> parseList |> toLines ( 0, 0 )
+        agga = aggLength
+
+        b =
+            second t |> parseList |> toLines ( 0, 0 )
+    in Nothing
