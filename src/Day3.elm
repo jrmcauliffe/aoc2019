@@ -1,6 +1,6 @@
 module Day3 exposing (Direction(..), Distance, Line, Point, closestIntersection, detectCrossing, parse, parseList, shortestPath, toLine, toLines)
 
-import Tuple exposing (first, second)
+import Tuple exposing (first, pair, second)
 
 
 type Direction
@@ -38,16 +38,16 @@ parse s =
         d :: num ->
             case d of
                 'U' ->
-                    Maybe.map (\n -> Tuple.pair Up n) (String.toInt <| String.fromList num)
+                    Maybe.map (\n -> pair Up n) (String.toInt <| String.fromList num)
 
                 'D' ->
-                    Maybe.map (\n -> Tuple.pair Down n) (String.toInt <| String.fromList num)
+                    Maybe.map (\n -> pair Down n) (String.toInt <| String.fromList num)
 
                 'L' ->
-                    Maybe.map (\n -> Tuple.pair Left n) (String.toInt <| String.fromList num)
+                    Maybe.map (\n -> pair Left n) (String.toInt <| String.fromList num)
 
                 'R' ->
-                    Maybe.map (\n -> Tuple.pair Right n) (String.toInt <| String.fromList num)
+                    Maybe.map (\n -> pair Right n) (String.toInt <| String.fromList num)
 
                 _ ->
                     Nothing
@@ -95,7 +95,7 @@ toLines point l =
 
 
 
--- Dectect if two lines cross and return crossing point if the do
+-- Detect if two lines cross and return crossing point if the do
 
 
 detectCrossing : Line -> Line -> Maybe Point
@@ -105,6 +105,22 @@ detectCrossing ( ( x1, y1 ), ( x2, y2 ) ) ( ( x3, y3 ), ( x4, y4 ) ) =
 
     else if between y3 y4 y1 && between y3 y4 y2 && between x1 x2 x3 && between x1 x2 x4 then
         Just ( x3, y1 )
+
+    else
+        Nothing
+
+
+
+-- Detect crossing point and return sum of line length after the crossing
+
+
+detectCrossing2 : Line -> Line -> Maybe Int
+detectCrossing2 ( ( x1, y1 ), ( x2, y2 ) ) ( ( x3, y3 ), ( x4, y4 ) ) =
+    if between x3 x4 x1 && between x3 x4 x2 && between y1 y2 y3 && between y1 y2 y4 then
+        Just (abs (x4 - x1) + abs (y2 - y3))
+
+    else if between y3 y4 y1 && between y3 y4 y2 && between x1 x2 x3 && between x1 x2 x4 then
+        Just (abs (x2 - x3) + abs (y4 - y1))
 
     else
         Nothing
@@ -143,9 +159,9 @@ length ( ( x1, y1 ), ( x2, y2 ) ) =
     abs (x1 - x2) + abs (y1 - y2)
 
 
-aggLength : List Line -> List ( Line, Int )
+aggLength : List Line -> List Int
 aggLength l =
-    l |> List.map (\x -> ( x, length x ))
+    l |> List.map (\x -> length x)
 
 
 cumSum : number -> List number -> List number
@@ -158,16 +174,31 @@ cumSum i l =
             []
 
 
-shortestPath : ( String, String ) -> Maybe Int
+
+-- shortestPath : ( String, String ) -> (List)
+
+
 shortestPath t =
     let
         a =
             first t |> parseList |> toLines ( 0, 0 )
 
-        agga =
-            aggLength
+        aa =
+            a |> aggLength |> cumSum 0
 
         b =
             second t |> parseList |> toLines ( 0, 0 )
+
+        bb =
+            b |> aggLength |> cumSum 0
+
+        comA =
+            List.map2 pair a aa
+
+        comB =
+            List.map2 pair b bb
     in
-    Nothing
+    List.concatMap (\x -> List.filterMap (\y -> Maybe.map (\z -> pair z (second x + second y)) (detectCrossing2 (first x) (first y))) comA) comB
+        |> List.map (\x -> second x - first x)
+        |> List.sort
+        |> List.head
