@@ -1,4 +1,4 @@
-module Day6 exposing (..)
+module Day6 exposing (allParents, orbitCount, orbitalTransfers, parse)
 
 import Dict exposing (..)
 import Tuple exposing (first, pair, second)
@@ -53,7 +53,7 @@ parse s =
 
 
 
--- The number of direct and indirect orbits
+-- The number of direct and indirect orbits (Problem 1)
 
 
 orbitCount : OrbitMap -> Int
@@ -65,3 +65,51 @@ orbitCount orbitMap =
                     List.foldl (\oo count -> agg (depth + 1) oo + count + depth + 1) 0 m
     in
     agg 0 orbitMap
+
+
+allParents : OrbitMap -> Dict Orbit (List Orbit)
+allParents orbitMap =
+    let
+        agg : List Orbit -> OrbitMap -> List ( Orbit, List Orbit )
+        agg p om =
+            case om of
+                Node ( o, [] ) ->
+                    [ ( o, p ) ]
+
+                Node ( o, l ) ->
+                    l |> List.concatMap (\x -> agg (o :: p) x) |> (::) ( o, p )
+    in
+    agg [] orbitMap |> Dict.fromList
+
+
+
+-- The number of transfers required to move between A and B
+
+
+orbitalTransfers : Orbit -> Orbit -> OrbitMap -> Maybe Int
+orbitalTransfers a b m =
+    let
+        p =
+            allParents m
+
+        ap =
+            p |> Dict.get a |> Maybe.withDefault [] |> List.indexedMap pair
+
+        bp =
+            p |> Dict.get b |> Maybe.withDefault [] |> List.indexedMap pair
+    in
+    List.concatMap
+        (\aa ->
+            List.filterMap
+                (\bb ->
+                    if second aa == second bb then
+                        Just (first aa + first bb)
+
+                    else
+                        Nothing
+                )
+                bp
+        )
+        ap
+        |> List.sort
+        |> List.head
