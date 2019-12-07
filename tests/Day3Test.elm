@@ -75,16 +75,15 @@ suite =
                 \_ ->
                     closestIntersection problem |> equal (Just 2050)
             ]
-        , skip <|
-            describe "Part2 Examples"
-                [ test "First Example" <|
-                    \_ -> shortestPath example1 |> equal (Just 30)
-                , test "Second Example" <|
-                    \_ -> shortestPath example2 |> equal (Just 610)
-                , test "Third Example" <|
-                    \_ -> shortestPath example3 |> equal (Just 410)
-                , test "Question Part 2" <|
-                    \_ ->
-                        shortestPath problem |> equal Nothing
-                ]
+        , describe "Part2 Examples"
+            [ test "First Example" <|
+                \_ -> shortestPath example1 |> equal (Just 30)
+            , test "Second Example" <|
+                \_ -> shortestPath example2 |> equal (Just 610)
+            , test "Third Example" <|
+                \_ -> shortestPath example3 |> equal (Just 410)
+            , test "Question Part 2" <|
+                \_ ->
+                    shortestPath problem |> equal (Just 21666)
+            ]
         ]
