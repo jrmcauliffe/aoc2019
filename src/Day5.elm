@@ -80,7 +80,7 @@ setVal a d v p =
 -- Recursive program instruction decode/execute
 
 
-run : Maybe Value -> List Value -> Address -> Program -> ( Program, List Value )
+run : List Value -> List Value -> Address -> Program -> ( Program, List Value )
 run input output pc program =
     case instructionDecoder (getVal pc directDecoder program) of
         -- Add
@@ -95,7 +95,7 @@ run input output pc program =
 
         -- Input to Parameter 1
         ( 3, ( d1, _, _ ) ) ->
-            Maybe.withDefault program (Maybe.map (\i -> setVal (pc + 1) d1 i program) input) |> run input output (pc + 2)
+            Maybe.withDefault program (Maybe.map (\i -> setVal (pc + 1) d1 i program) (List.head input)) |> run input output (pc + 2)
 
         -- Output Parameter 1
         ( 4, ( d1, _, _ ) ) ->
