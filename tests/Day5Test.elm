@@ -65,17 +65,21 @@ suite =
                 \_ -> parse example6 |> run Nothing [] 0 |> first |> equal (Array.fromList [ 1101, 100, -1, 4, 99 ])
             , test "Day 2 problem" <|
                 \_ -> parse day2problem |> Array.set 1 12 |> Array.set 2 2 |> run Nothing [] 0 |> first |> Array.get 0 |> equal (Just 9581917)
-            , test "Problem part 1" <|
-                \_ -> parse problem |> run (Just 1) [] 0 |> second |> equal []
-            , test "Adhoc" <|
-                \_ -> parse "1,1,2,4,0" |> run (Just 1) [ 1 ] 0 |> first |> equal (Array.fromList [ 1, 1, 2, 4, 3 ])
-            , test "Direct Add" <|
-                \_ -> parse "1101,3,3,4,0" |> run (Just 1) [ 1 ] 0 |> first |> equal (Array.fromList [ 1101, 3, 3, 4, 6 ])
-            , test "Direct Multiply" <|
-                \_ -> parse "1102,3,3,4,0" |> run (Just 1) [ 1 ] 0 |> first |> equal (Array.fromList [ 1102, 3, 3, 4, 9 ])
-            , test "Indirect Add" <|
-                \_ -> parse "1,4,5,6,6,6,0" |> run (Just 1) [ 1 ] 0 |> first |> equal (Array.fromList [ 1, 4, 5, 6, 6, 6, 12 ])
-            , test "Indirect Multiply" <|
-                \_ -> parse "2,4,5,6,6,6,0" |> run (Just 1) [ 1 ] 0 |> first |> equal (Array.fromList [ 2, 4, 5, 6, 6, 6, 36 ])
+            , skip <|
+                test "Problem part 1" <|
+                    \_ ->
+                        let
+                            program =
+                                parse problem
+                        in
+                        run (Just 1) [] 0 program |> second |> List.head |> equal Nothing
+            , skip <|
+                test "Problem part 2" <|
+                    \_ ->
+                        let
+                            program =
+                                parse problem
+                        in
+                        run (Just 5) [] 0 program |> second |> List.head |> equal Nothing
             ]
         ]

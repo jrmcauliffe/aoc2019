@@ -83,17 +83,21 @@ setVal a d v p =
 run : Maybe Value -> List Value -> Address -> Program -> ( Program, List Value )
 run input output pc program =
     case instructionDecoder (getVal pc directDecoder program) of
+        -- Add
         ( 1, ( d1, d2, d3 ) ) ->
             setVal (pc + 3) d3 (getVal (pc + 1) d1 program + getVal (pc + 2) d2 program) program
                 |> run input output (pc + 4)
 
+        -- Mult
         ( 2, ( d1, d2, d3 ) ) ->
             setVal (pc + 3) d3 (getVal (pc + 1) d1 program * getVal (pc + 2) d2 program) program
                 |> run input output (pc + 4)
 
+        -- Input to Parameter 1
         ( 3, ( d1, _, _ ) ) ->
             Maybe.withDefault program (Maybe.map (\i -> setVal (pc + 1) d1 i program) input) |> run input output (pc + 2)
 
+        -- Output Parameter 1
         ( 4, ( d1, _, _ ) ) ->
             -- if non-zero output halt for debugging
             let
@@ -105,6 +109,46 @@ run input output pc program =
 
             else
                 run input (o :: output) (pc + 2) program
+
+        -- Jump-if-true
+        ( 5, ( d1, d2, _ ) ) ->
+            if getVal (pc + 1) d1 program /= 0 then
+                run input output (getVal (pc + 2) d2 program) program
+
+            else
+                run input output (pc + 3) program
+
+        -- Jump-if-false
+        ( 6, ( d1, d2, _ ) ) ->
+            if getVal (pc + 1) d1 program == 0 then
+                run input output (getVal (pc + 2) d2 program) program
+
+            else
+                run input output (pc + 3) program
+
+        -- Less than
+        ( 7, ( d1, d2, d3 ) ) ->
+            let
+                val =
+                    if getVal (pc + 1) d1 program < getVal (pc + 2) d2 program then
+                        1
+
+                    else
+                        0
+            in
+            program |> setVal (pc + 3) d3 val |> run input output (pc + 4)
+
+        -- Equal
+        ( 8, ( d1, d2, d3 ) ) ->
+            let
+                val =
+                    if getVal (pc + 1) d1 program == getVal (pc + 2) d2 program then
+                        1
+
+                    else
+                        0
+            in
+            program |> setVal (pc + 3) d3 val |> run input output (pc + 4)
 
         _ ->
             ( program, output )

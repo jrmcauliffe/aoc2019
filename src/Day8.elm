@@ -1,4 +1,4 @@
-module Day8 exposing (part1, parse, decode, render)
+module Day8 exposing (decode, parse, part1, render)
 
 import Tuple exposing (first, pair, second)
 
@@ -46,7 +46,11 @@ parseLayer w s =
             in
             remaining |> List.drop w |> parseLayer w |> List.append l
 
+
+
 -- Solution to Part 1
+
+
 part1 : Image -> Maybe Int
 part1 i =
     let
@@ -70,7 +74,10 @@ part1 i =
     Maybe.map2 (*) onesCount twosCount
 
 
+
 -- Get correct layer values using transparency '2'
+
+
 superImpose : Layer -> Layer -> Layer
 superImpose upper lower =
     let
@@ -90,7 +97,10 @@ superImpose upper lower =
         |> parseLayer len
 
 
+
 -- Apply superpositon progressively from lowest to hightest layer
+
+
 decode : Image -> Layer
 decode i =
     let
@@ -111,7 +121,10 @@ decode i =
             [ [] ]
 
 
+
 -- Render the image
+
+
 render : Layer -> String
 render l =
     l
@@ -119,7 +132,8 @@ render l =
             (\r ->
                 r
                     |> List.map
-                             (\c -> if c == '1' then
+                        (\c ->
+                            if c == '1' then
                                 '█'
 
                             else
