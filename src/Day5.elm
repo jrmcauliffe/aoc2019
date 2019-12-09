@@ -84,18 +84,19 @@ run : List Value -> List Value -> Address -> Prog -> ( Prog, List Value )
 run input output pc program =
     case instructionDecoder (getVal pc directDecoder program) of
         -- Add
-        ( 1, ( d1, d2, d3 ) ) ->
-            setVal (pc + 3) d3 (getVal (pc + 1) d1 program + getVal (pc + 2) d2 program) program
+        ( 1, ( d1, d2, _ ) ) ->
+            setVal (pc + 3) indirectDecoder (getVal (pc + 1) d1 program + getVal (pc + 2) d2 program) program
                 |> run input output (pc + 4)
 
         -- Mult
-        ( 2, ( d1, d2, d3 ) ) ->
-            setVal (pc + 3) d3 (getVal (pc + 1) d1 program * getVal (pc + 2) d2 program) program
+        ( 2, ( d1, d2, _ ) ) ->
+            setVal (pc + 3) indirectDecoder (getVal (pc + 1) d1 program * getVal (pc + 2) d2 program) program
                 |> run input output (pc + 4)
 
         -- Input to Parameter 1
-        ( 3, ( d1, _, _ ) ) ->
-            Maybe.withDefault program (Maybe.map (\i -> setVal (pc + 1) d1 i program) (List.head input)) |> run input output (pc + 2)
+        ( 3, ( _, _, _ ) ) ->
+            Maybe.withDefault program (Maybe.map (\i -> setVal (pc + 1) indirectDecoder i program) (List.head input))
+                |> run (Maybe.withDefault [] (List.tail input)) output (pc + 2)
 
         -- Output Parameter 1
         ( 4, ( d1, _, _ ) ) ->

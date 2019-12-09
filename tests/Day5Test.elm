@@ -60,7 +60,7 @@ suite =
             ]
         , describe "Part1 Examples"
             [ test "First Example" <|
-                \_ -> parse example0 |> run [62] [] 0 |> second |> equal [ 62 ]
+                \_ -> parse example0 |> run [ 62 ] [] 0 |> second |> equal [ 62 ]
             , test "Sixth Example" <|
                 \_ -> parse example6 |> run [] [] 0 |> first |> equal (Array.fromList [ 1101, 100, -1, 4, 99 ])
             , test "Day 2 problem" <|
@@ -72,7 +72,7 @@ suite =
                             program =
                                 parse problem
                         in
-                        run [1] [] 0 program |> second |> List.head |> equal Nothing
+                        run [ 1 ] [] 0 program |> second |> List.head |> equal Nothing
             , skip <|
                 test "Problem part 2" <|
                     \_ ->
@@ -80,6 +80,6 @@ suite =
                             program =
                                 parse problem
                         in
-                        run [5] [] 0 program |> second |> List.head |> equal Nothing
+                        run [ 5 ] [] 0 program |> second |> List.head |> equal Nothing
             ]
         ]
