@@ -7,7 +7,7 @@ import Array exposing (..)
 -- https://adventofcode.com/2019/day/5
 
 
-type alias Program =
+type alias Prog =
     Array Int
 
 
@@ -20,7 +20,7 @@ type alias Value =
 
 
 type alias AddressDecoder =
-    Address -> Program -> Address
+    Address -> Prog -> Address
 
 
 directDecoder : AddressDecoder
@@ -59,19 +59,19 @@ instructionDecoder inst =
 -- Parse input string into list of ints
 
 
-parse : String -> Program
+parse : String -> Prog
 parse s =
     String.split "," s
         |> List.filterMap (\x -> String.toInt x)
         |> Array.fromList
 
 
-getVal : Address -> AddressDecoder -> Program -> Value
+getVal : Address -> AddressDecoder -> Prog -> Value
 getVal a d p =
     p |> Array.get (d a p) |> Maybe.withDefault -1
 
 
-setVal : Address -> AddressDecoder -> Value -> Program -> Program
+setVal : Address -> AddressDecoder -> Value -> Prog -> Prog
 setVal a d v p =
     p |> Array.set (d a p) v
 
@@ -80,7 +80,7 @@ setVal a d v p =
 -- Recursive program instruction decode/execute
 
 
-run : List Value -> List Value -> Address -> Program -> ( Program, List Value )
+run : List Value -> List Value -> Address -> Prog -> ( Prog, List Value )
 run input output pc program =
     case instructionDecoder (getVal pc directDecoder program) of
         -- Add
