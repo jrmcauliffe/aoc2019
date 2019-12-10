@@ -2,7 +2,7 @@ module Day7 exposing (..)
 
 import Array exposing (..)
 import Day5 exposing (..)
-import Tuple exposing (second)
+import Tuple exposing (first, second)
 
 
 
@@ -24,3 +24,26 @@ process stages input =
 
         [] ->
             Nothing
+
+
+permutations : List a -> List (List a)
+permutations l =
+    case l of
+        x :: [] ->
+            [ [ x ] ]
+
+        [] ->
+            [ [] ]
+
+        xs ->
+            List.concatMap (\x -> xs |> List.filter ((/=) x) |> permutations |> List.map ((::) x)) xs
+
+
+maxPower : List Int -> Int -> Prog -> Maybe ( List Int, Int )
+maxPower phaseSeq initialVal prog =
+    permutations phaseSeq
+        |> List.map (\ps -> ( ps, process (List.map (\p -> ( prog, p )) ps) initialVal ))
+        |> List.map (\x -> ( first x, Maybe.withDefault 0 (second x) ))
+        |> List.sortBy second
+        |> List.reverse
+        |> List.head
