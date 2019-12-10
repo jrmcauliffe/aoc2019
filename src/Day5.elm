@@ -7,8 +7,16 @@ import Array exposing (..)
 -- https://adventofcode.com/2019/day/5
 
 
-type alias Prog =
+type alias Memory =
     Array Int
+
+
+type alias VM =
+    { pc : Int
+    , input : List Value
+    , output : List Value
+    , memory : Memory
+    }
 
 
 type alias Address =
@@ -20,7 +28,7 @@ type alias Value =
 
 
 type alias AddressDecoder =
-    Address -> Prog -> Address
+    Address -> Memory -> Address
 
 
 directDecoder : AddressDecoder
@@ -59,99 +67,104 @@ instructionDecoder inst =
 -- Parse input string into list of ints
 
 
-parse : String -> Prog
+parse : String -> Memory
 parse s =
     String.split "," s
         |> List.filterMap (\x -> String.toInt x)
         |> Array.fromList
 
 
-getVal : Address -> AddressDecoder -> Prog -> Value
+getVal : Address -> AddressDecoder -> Memory -> Value
 getVal a d p =
     p |> Array.get (d a p) |> Maybe.withDefault -1
 
 
-setVal : Address -> AddressDecoder -> Value -> Prog -> Prog
+setVal : Address -> AddressDecoder -> Value -> Memory -> Memory
 setVal a d v p =
     p |> Array.set (d a p) v
 
 
 
 -- Recursive program instruction decode/execute
+--run : List Value -> List Value -> Address -> Prog -> ( (Prog, Value), List Value )
+--run input output pc program =
 
 
-run : List Value -> List Value -> Address -> Prog -> ( (Prog, Value), List Value )
-run input output pc program =
-    case instructionDecoder (getVal pc directDecoder program) of
+run : VM -> VM
+run vm =
+    case instructionDecoder (getVal vm.pc directDecoder vm.memory) of
         -- Add
         ( 1, ( d1, d2, _ ) ) ->
-            setVal (pc + 3) indirectDecoder (getVal (pc + 1) d1 program + getVal (pc + 2) d2 program) program
-                |> run input output (pc + 4)
+            setVal (vm.pc + 3) indirectDecoder (getVal (vm.pc + 1) d1 vm.memory + getVal (vm.pc + 2) d2 vm.memory) vm.memory
+                |> VM (vm.pc + 4) vm.input vm.output
+                |> run
 
         -- Mult
         ( 2, ( d1, d2, _ ) ) ->
-            setVal (pc + 3) indirectDecoder (getVal (pc + 1) d1 program * getVal (pc + 2) d2 program) program
-                |> run input output (pc + 4)
+            setVal (vm.pc + 3) indirectDecoder (getVal (vm.pc + 1) d1 vm.memory * getVal (vm.pc + 2) d2 vm.memory) vm.memory
+                |> VM (vm.pc + 4) vm.input vm.output
+                |> run
 
-        -- Input to Parameter 1
+        -- Input to Parameter 1 (Halt on empty input queue saving program counter)
         ( 3, ( _, _, _ ) ) ->
-            List.head input  
-            |> Maybe.map (\i -> setVal (pc + 1) indirectDecoder i program) 
-            |> Maybe.map (\i -> run (Maybe.withDefault [] (List.tail input)) output (pc + 2))
-            |> Maybe.withDefault (( program, pc), output ) 
+            List.head vm.input
+                |> Maybe.map (\i -> setVal (vm.pc + 1) indirectDecoder i vm.memory)
+                |> Maybe.map (VM (vm.pc + 2) (Maybe.withDefault [] (List.tail vm.input)) vm.output)
+                |> Maybe.map run
+                |> Maybe.withDefault { vm | pc = 8888 }
 
         -- Output Parameter 1
         ( 4, ( d1, _, _ ) ) ->
-            -- if non-zero output halt for debugging
-            let
-                o =
-                    getVal (pc + 1) d1 program
-            in
-            if o > 0 then
-                ( (program, pc), o :: output )
-
-            else
-                run input (o :: output) (pc + 2) program
+            VM (vm.pc + 2) vm.input (getVal (vm.pc + 1) d1 vm.memory :: vm.output) vm.memory |> run
 
         -- Jump-if-true
         ( 5, ( d1, d2, _ ) ) ->
-            if getVal (pc + 1) d1 program /= 0 then
-                run input output (getVal (pc + 2) d2 program) program
+            if getVal (vm.pc + 1) d1 vm.memory /= 0 then
+                VM (getVal (vm.pc + 2) d2 vm.memory) vm.input vm.output vm.memory |> run
 
             else
-                run input output (pc + 3) program
+                VM (vm.pc + 3) vm.input vm.output vm.memory |> run
 
         -- Jump-if-false
         ( 6, ( d1, d2, _ ) ) ->
-            if getVal (pc + 1) d1 program == 0 then
-                run input output (getVal (pc + 2) d2 program) program
+            if getVal (vm.pc + 1) d1 vm.memory == 0 then
+                VM (getVal (vm.pc + 2) d2 vm.memory) vm.input vm.output vm.memory |> run
 
             else
-                run input output (pc + 3) program
+                VM (vm.pc + 3) vm.input vm.output vm.memory |> run
 
         -- Less than
         ( 7, ( d1, d2, d3 ) ) ->
             let
                 val =
-                    if getVal (pc + 1) d1 program < getVal (pc + 2) d2 program then
+                    if getVal (vm.pc + 1) d1 vm.memory < getVal (vm.pc + 2) d2 vm.memory then
                         1
 
                     else
                         0
             in
-            program |> setVal (pc + 3) d3 val |> run input output (pc + 4)
+            vm.memory |> setVal (vm.pc + 3) d3 val |> VM (vm.pc + 4) vm.input vm.output |> run
 
         -- Equal
         ( 8, ( d1, d2, d3 ) ) ->
             let
                 val =
-                    if getVal (pc + 1) d1 program == getVal (pc + 2) d2 program then
+                    if getVal (vm.pc + 1) d1 vm.memory == getVal (vm.pc + 2) d2 vm.memory then
                         1
 
                     else
                         0
             in
-            program |> setVal (pc + 3) d3 val |> run input output (pc + 4)
+            vm.memory |> setVal (vm.pc + 3) d3 val |> VM (vm.pc + 4) vm.input vm.output |> run
 
         _ ->
-            ( (program, pc) , output )
+            vm
+
+
+
+-- Check f0r whether a given program and pc that the program has halted (or stalled waiting for input)
+
+
+runComplete : VM -> Bool
+runComplete vm =
+    getVal vm.pc directDecoder vm.memory == 99
