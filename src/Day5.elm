@@ -111,7 +111,7 @@ run vm =
                 |> Maybe.map (\i -> setVal (vm.pc + 1) indirectDecoder i vm.memory)
                 |> Maybe.map (VM (vm.pc + 2) (Maybe.withDefault [] (List.tail vm.input)) vm.output)
                 |> Maybe.map run
-                |> Maybe.withDefault { vm | pc = 8888 }
+                |> Maybe.withDefault vm
 
         -- Output Parameter 1
         ( 4, ( d1, _, _ ) ) ->
