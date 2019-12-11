@@ -108,13 +108,17 @@ run vm =
         -- Input to Parameter 1 (Halt on empty input queue saving program counter)
         ( 3, ( _, _, _ ) ) ->
             List.head vm.input
-                |> Maybe.map (\i -> setVal (vm.pc + 1) indirectDecoder i vm.memory |>
-                              VM (vm.pc + 2) (Maybe.withDefault [] (List.tail vm.input)) vm.output |> run)
+                |> Maybe.map
+                    (\i ->
+                        setVal (vm.pc + 1) indirectDecoder i vm.memory
+                            |> VM (vm.pc + 2) (Maybe.withDefault [] (List.tail vm.input)) vm.output
+                            |> run
+                    )
                 |> Maybe.withDefault vm
 
         -- Output Parameter 1
         ( 4, ( d1, _, _ ) ) ->
-            VM (vm.pc + 2) vm.input ((getVal (vm.pc + 1) d1 vm.memory) :: vm.output) vm.memory |> run
+            VM (vm.pc + 2) vm.input (getVal (vm.pc + 1) d1 vm.memory :: vm.output) vm.memory |> run
 
         -- Jump-if-true
         ( 5, ( d1, d2, _ ) ) ->
