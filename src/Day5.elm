@@ -15,7 +15,7 @@ type alias VM =
     { pc : Int
     , input : List Value
     , output : List Value
-    , baseOffset: Int
+    , baseOffset : Int
     , memory : Memory
     }
 
@@ -36,16 +36,27 @@ directDecoder : AddressDecoder
 directDecoder address _ _ =
     address
 
+
 relativeDecoder : AddressDecoder
-relativeDecoder address base program = Array.get (address) program |> Maybe.map ((+) base) |> Maybe.withDefault -1
+relativeDecoder address base program =
+    Array.get address program |> Maybe.map ((+) base) |> Maybe.withDefault -1
+
+
 indirectDecoder : AddressDecoder
-indirectDecoder address _ program = Array.get (address) program |> Maybe.withDefault -1
+indirectDecoder address _ program =
+    Array.get address program |> Maybe.withDefault -1
+
 
 addressModeDecoder m =
     case m of
-      1 -> directDecoder
-      2 -> relativeDecoder
-      _ -> indirectDecoder
+        1 ->
+            directDecoder
+
+        2 ->
+            relativeDecoder
+
+        _ ->
+            indirectDecoder
 
 
 instructionDecoder : Value -> ( Value, ( AddressDecoder, AddressDecoder, AddressDecoder ) )
@@ -75,7 +86,7 @@ parse s =
 
 getVal : Address -> AddressDecoder -> VM -> Value
 getVal a d vm =
-    vm.memory |> Array.get (d a vm.baseOffset vm.memory) |> Maybe.withDefault -1
+    vm.memory |> Array.get (d a vm.baseOffset vm.memory) |> Maybe.withDefault 0
 
 
 setVal : Address -> AddressDecoder -> Value -> VM -> Memory
@@ -85,6 +96,7 @@ setVal a d v vm =
 
 
 -- Recursive program instruction decode/execute
+
 
 run : VM -> VM
 run vm =
@@ -106,7 +118,7 @@ run vm =
             List.head vm.input
                 |> Maybe.map
                     (\i ->
-                        setVal (vm.pc + 1) d1  i vm
+                        setVal (vm.pc + 1) d1 i vm
                             |> VM (vm.pc + 2) (Maybe.withDefault [] (List.tail vm.input)) vm.output vm.baseOffset
                             |> run
                     )
@@ -114,7 +126,7 @@ run vm =
 
         -- Output Parameter 1
         ( 4, ( d1, _, _ ) ) ->
-            VM (vm.pc + 2) vm.input ((getVal (vm.pc + 1) d1 vm) :: vm.output) vm.baseOffset vm.memory |> run
+            VM (vm.pc + 2) vm.input (getVal (vm.pc + 1) d1 vm :: vm.output) vm.baseOffset vm.memory |> run
 
         -- Jump-if-true
         ( 5, ( d1, d2, _ ) ) ->
@@ -157,8 +169,9 @@ run vm =
             vm |> setVal (vm.pc + 3) d3 val |> VM (vm.pc + 4) vm.input vm.output vm.baseOffset |> run
 
         -- Set base offset
-        ( 9, ( d, _, _)) ->
-            {vm | baseOffset = getVal (vm.pc+1) d vm, pc = vm.pc+2 } |> run
+        ( 9, ( d, _, _ ) ) ->
+            { vm | baseOffset = getVal (vm.pc + 1) d vm, pc = vm.pc + 2 } |> run
+
         _ ->
             vm
 
