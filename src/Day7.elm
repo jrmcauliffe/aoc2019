@@ -6,10 +6,11 @@ import Tuple exposing (first, second)
 -- https://adventofcode.com/2019/day/7
 
 process : List VM -> Value -> Maybe Value
-process stages i  =
+process stages input  =
+   let runWithInput s i = {s | input = i :: s.input} |> run in
    case stages of
-        stage :: [] -> { stage | input = (i :: stage.input)} |> run |> .output |> List.head
-        stage :: rest -> { stage | input = (i :: stage.input)} |> run |> .output |> List.head |> Maybe.andThen (process rest)
+        stage :: [] -> runWithInput stage input  |> .output |> List.head
+        stage :: rest -> runWithInput stage input |> .output |> List.head |> Maybe.andThen (process rest)
         [] -> Nothing
 
 
@@ -26,10 +27,10 @@ permutations l =
             List.concatMap (\x -> xs |> List.filter ((/=) x) |> permutations |> List.map ((::) x)) xs
 
 
-maxPower : List Int -> Int -> Memory -> Maybe ( List Int, Int )
+-- maxPower : List Int -> Int -> Memory -> Maybe ( List Int, Int )
 maxPower phaseSeq initialVal memory =
     permutations phaseSeq
-        |> List.map (\ps -> ( ps, process (List.map (\p -> (VM 0 [p, initialVal] [] memory)) ps) initialVal ))
+        |> List.map (\ps -> (ps, initialVal |> process (List.map (\phase -> VM 0 [phase] [] memory |> run) ps) ) )
         |> List.map (\x -> ( first x, Maybe.withDefault 0 (second x) ))
         |> List.sortBy second
         |> List.reverse
