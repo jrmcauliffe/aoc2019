@@ -15,6 +15,7 @@ type alias VM =
     { pc : Int
     , input : List Value
     , output : List Value
+    , baseOffset: Int
     , memory : Memory
     }
 
@@ -28,17 +29,18 @@ type alias Value =
 
 
 type alias AddressDecoder =
-    Address -> Memory -> Address
+    Address -> Int -> Memory -> Address
 
 
 directDecoder : AddressDecoder
-directDecoder a _ =
+directDecoder a _ _ =
     a
 
+relativeDecoder : AddressDecoder
+relativeDecoder address base program = Maybe.withDefault -1 <| Array.get (base + address) program
 
 indirectDecoder : AddressDecoder
-indirectDecoder a p =
-    Maybe.withDefault -1 <| Array.get a p
+indirectDecoder a _ p = relativeDecoder a 0 p
 
 
 addressModeDecoder m =
@@ -74,35 +76,32 @@ parse s =
         |> Array.fromList
 
 
-getVal : Address -> AddressDecoder -> Memory -> Value
-getVal a d p =
-    p |> Array.get (d a p) |> Maybe.withDefault -1
+getVal : Address -> AddressDecoder -> VM -> Value
+getVal a d vm =
+    vm.memory |> Array.get (d a vm.baseOffset vm.memory) |> Maybe.withDefault -1
 
 
-setVal : Address -> AddressDecoder -> Value -> Memory -> Memory
-setVal a d v p =
-    p |> Array.set (d a p) v
+setVal : Address -> AddressDecoder -> Value -> VM -> Memory
+setVal a d v vm =
+    vm.memory |> Array.set (d a vm.baseOffset vm.memory) v
 
 
 
 -- Recursive program instruction decode/execute
---run : List Value -> List Value -> Address -> Prog -> ( (Prog, Value), List Value )
---run input output pc program =
-
 
 run : VM -> VM
 run vm =
-    case instructionDecoder (getVal vm.pc directDecoder vm.memory) of
+    case instructionDecoder (getVal vm.pc directDecoder vm) of
         -- Add
         ( 1, ( d1, d2, _ ) ) ->
-            setVal (vm.pc + 3) indirectDecoder (getVal (vm.pc + 1) d1 vm.memory + getVal (vm.pc + 2) d2 vm.memory) vm.memory
-                |> VM (vm.pc + 4) vm.input vm.output
+            setVal (vm.pc + 3) indirectDecoder (getVal (vm.pc + 1) d1 vm + getVal (vm.pc + 2) d2 vm) vm
+                |> VM (vm.pc + 4) vm.input vm.output vm.baseOffset
                 |> run
 
         -- Mult
         ( 2, ( d1, d2, _ ) ) ->
-            setVal (vm.pc + 3) indirectDecoder (getVal (vm.pc + 1) d1 vm.memory * getVal (vm.pc + 2) d2 vm.memory) vm.memory
-                |> VM (vm.pc + 4) vm.input vm.output
+            setVal (vm.pc + 3) indirectDecoder (getVal (vm.pc + 1) d1 vm * getVal (vm.pc + 2) d2 vm) vm
+                |> VM (vm.pc + 4) vm.input vm.output vm.baseOffset
                 |> run
 
         -- Input to Parameter 1 (Halt on empty input queue saving program counter)
@@ -110,55 +109,55 @@ run vm =
             List.head vm.input
                 |> Maybe.map
                     (\i ->
-                        setVal (vm.pc + 1) indirectDecoder i vm.memory
-                            |> VM (vm.pc + 2) (Maybe.withDefault [] (List.tail vm.input)) vm.output
+                        setVal (vm.pc + 1) indirectDecoder i vm
+                            |> VM (vm.pc + 2) (Maybe.withDefault [] (List.tail vm.input)) vm.output vm.baseOffset
                             |> run
                     )
                 |> Maybe.withDefault vm
 
         -- Output Parameter 1
         ( 4, ( d1, _, _ ) ) ->
-            VM (vm.pc + 2) vm.input (getVal (vm.pc + 1) d1 vm.memory :: vm.output) vm.memory |> run
+            VM (vm.pc + 2) vm.input ((getVal (vm.pc + 1) d1 vm) :: vm.output) vm.baseOffset vm.memory |> run
 
         -- Jump-if-true
         ( 5, ( d1, d2, _ ) ) ->
-            if getVal (vm.pc + 1) d1 vm.memory /= 0 then
-                VM (getVal (vm.pc + 2) d2 vm.memory) vm.input vm.output vm.memory |> run
+            if getVal (vm.pc + 1) d1 vm /= 0 then
+                VM (getVal (vm.pc + 2) d2 vm) vm.input vm.output vm.baseOffset vm.memory |> run
 
             else
-                VM (vm.pc + 3) vm.input vm.output vm.memory |> run
+                VM (vm.pc + 3) vm.input vm.output vm.baseOffset vm.memory |> run
 
         -- Jump-if-false
         ( 6, ( d1, d2, _ ) ) ->
-            if getVal (vm.pc + 1) d1 vm.memory == 0 then
-                VM (getVal (vm.pc + 2) d2 vm.memory) vm.input vm.output vm.memory |> run
+            if getVal (vm.pc + 1) d1 vm == 0 then
+                VM (getVal (vm.pc + 2) d2 vm) vm.input vm.output vm.baseOffset vm.memory |> run
 
             else
-                VM (vm.pc + 3) vm.input vm.output vm.memory |> run
+                VM (vm.pc + 3) vm.input vm.output vm.baseOffset vm.memory |> run
 
         -- Less than
         ( 7, ( d1, d2, d3 ) ) ->
             let
                 val =
-                    if getVal (vm.pc + 1) d1 vm.memory < getVal (vm.pc + 2) d2 vm.memory then
+                    if getVal (vm.pc + 1) d1 vm < getVal (vm.pc + 2) d2 vm then
                         1
 
                     else
                         0
             in
-            vm.memory |> setVal (vm.pc + 3) d3 val |> VM (vm.pc + 4) vm.input vm.output |> run
+            vm |> setVal (vm.pc + 3) d3 val |> VM (vm.pc + 4) vm.input vm.output vm.baseOffset |> run
 
         -- Equal
         ( 8, ( d1, d2, d3 ) ) ->
             let
                 val =
-                    if getVal (vm.pc + 1) d1 vm.memory == getVal (vm.pc + 2) d2 vm.memory then
+                    if getVal (vm.pc + 1) d1 vm == getVal (vm.pc + 2) d2 vm then
                         1
 
                     else
                         0
             in
-            vm.memory |> setVal (vm.pc + 3) d3 val |> VM (vm.pc + 4) vm.input vm.output |> run
+            vm |> setVal (vm.pc + 3) d3 val |> VM (vm.pc + 4) vm.input vm.output vm.baseOffset |> run
 
         _ ->
             vm
@@ -170,4 +169,4 @@ run vm =
 
 runComplete : VM -> Bool
 runComplete vm =
-    getVal vm.pc directDecoder vm.memory == 99
+    getVal vm.pc directDecoder vm == 99

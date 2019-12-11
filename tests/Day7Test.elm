@@ -40,7 +40,7 @@ suite =
                         p =
                             example1 |> parse
                     in
-                    process ([ 4, 3, 2, 1, 0 ] |> List.map (\ph -> VM 0 [ ph ] [] p |> run)) 0 |> equal (Just 43210)
+                    process ([ 4, 3, 2, 1, 0 ] |> List.map (\ph -> VM 0 [ ph ] [] 0 p |> run)) 0 |> equal (Just 43210)
             , test "Example 1 find phases" <|
                 \_ ->
                     example1 |> parse |> maxPower [ 0, 1, 2, 3, 4 ] 0 |> equal (Just ( [ 4, 3, 2, 1, 0 ], 43210 ))
@@ -50,7 +50,7 @@ suite =
                         p =
                             example2 |> parse
                     in
-                    process ([ 0, 1, 2, 3, 4 ] |> List.map (\ph -> VM 0 [ ph ] [] p |> run)) 0 |> equal (Just 54321)
+                    process ([ 0, 1, 2, 3, 4 ] |> List.map (\ph -> VM 0 [ ph ] [] 0 p |> run)) 0 |> equal (Just 54321)
             , test "Example 2 find phases" <|
                 \_ ->
                     example2 |> parse |> maxPower [ 0, 1, 2, 3, 4 ] 0 |> equal (Just ( [ 0, 1, 2, 3, 4 ], 54321 ))
@@ -60,7 +60,7 @@ suite =
                         p =
                             example3 |> parse
                     in
-                    process ([ 1, 0, 4, 3, 2 ] |> List.map (\ph -> VM 0 [ ph ] [] p |> run)) 0 |> equal (Just 65210)
+                    process ([ 1, 0, 4, 3, 2 ] |> List.map (\ph -> VM 0 [ ph ] [] 0 p |> run)) 0 |> equal (Just 65210)
             , test "Example 3 find phases" <|
                 \_ ->
                     example3 |> parse |> maxPower [ 0, 1, 2, 3, 4 ] 0 |> equal (Just ( [ 1, 0, 4, 3, 2 ], 65210 ))
@@ -75,16 +75,16 @@ suite =
                         p =
                             example4 |> parse
                     in
-                    process ([ 9, 8, 7, 6, 5 ] |> List.map (\ph -> VM 0 [ ph ] [] p |> run)) 0 |> equal (Just 139629729)
+                    process ([ 9, 8, 7, 6, 5 ] |> List.map (\ph -> VM 0 [ ph ] [] 0 p |> run)) 0 |> equal (Just 139629729)
             , test "example 5" <|
                 \_ ->
                     let
                         p =
                             example5 |> parse
                     in
-                    process ([ 9, 7, 8, 5, 6 ] |> List.map (\ph -> VM 0 [ ph ] [] p |> run)) 0 |> equal (Just 18216)
+                    process ([ 9, 7, 8, 5, 6 ] |> List.map (\ph -> VM 0 [ ph ] [] 0 p |> run)) 0 |> equal (Just 18216)
             , test "Problem" <|
                 \_ ->
-                    problem |> parse |> maxPower [ 5, 6, 7, 8, 9 ] 0 |> Maybe.map Tuple.second |> equal (Just 255590)
+                    problem |> parse |> maxPower [ 5, 6, 7, 8, 9 ] 0 |> Maybe.map Tuple.second |> equal (Just 58285150)
             ]
         ]

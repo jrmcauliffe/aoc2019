@@ -57,7 +57,7 @@ permutations l =
 
 maxPower phaseSeq initialVal memory =
     permutations phaseSeq
-        |> List.map (\ps -> ( ps, initialVal |> process (List.map (\phase -> VM 0 [ phase ] [] memory |> run) ps) ))
+        |> List.map (\ps -> ( ps, initialVal |> process (List.map (\phase -> VM 0 [ phase ] [] 0 memory |> run) ps) ))
         |> List.map (\x -> ( first x, Maybe.withDefault 0 (second x) ))
         |> List.sortBy second
         |> List.reverse
