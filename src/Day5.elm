@@ -1,6 +1,6 @@
 module Day5 exposing (..)
 
-import Array exposing (..)
+import Dict exposing (..)
 
 
 
@@ -8,7 +8,7 @@ import Array exposing (..)
 
 
 type alias Memory =
-    Array Int
+    Dict Address Value
 
 
 type alias VM =
@@ -39,12 +39,12 @@ directDecoder address _ _ =
 
 relativeDecoder : AddressDecoder
 relativeDecoder address base program =
-    Array.get address program |> Maybe.map ((+) base) |> Maybe.withDefault -1
+    Dict.get address program |> Maybe.map ((+) base) |> Maybe.withDefault -1
 
 
 indirectDecoder : AddressDecoder
 indirectDecoder address _ program =
-    Array.get address program |> Maybe.withDefault -1
+    Dict.get address program |> Maybe.withDefault -1
 
 
 addressModeDecoder m =
@@ -81,17 +81,18 @@ parse : String -> Memory
 parse s =
     String.split "," s
         |> List.filterMap (\x -> String.toInt x)
-        |> Array.fromList
+        |> List.indexedMap Tuple.pair
+        |> Dict.fromList
 
 
 getVal : Address -> AddressDecoder -> VM -> Value
 getVal a d vm =
-    vm.memory |> Array.get (d a vm.baseOffset vm.memory) |> Maybe.withDefault 0
+    vm.memory |> Dict.get (d a vm.baseOffset vm.memory) |> Maybe.withDefault 0
 
 
 setVal : Address -> AddressDecoder -> Value -> VM -> Memory
 setVal a d v vm =
-    vm.memory |> Array.set (d a vm.baseOffset vm.memory) v
+    vm.memory |> Dict.insert (d a vm.baseOffset vm.memory) v
 
 
 

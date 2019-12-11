@@ -1,7 +1,7 @@
 module Day5Test exposing (suite)
 
-import Array exposing (..)
 import Day5 exposing (..)
+import Dict exposing (..)
 import Expect exposing (equal)
 import Test exposing (..)
 import Tuple exposing (first, second)
@@ -48,23 +48,23 @@ suite =
     describe "Day5 Tests"
         [ describe "Day2 Examples"
             [ test "First Example" <|
-                \_ -> parse example1 |> VM 0 [] [] 0 |> run |> .memory |> equal (Array.fromList [ 3500, 9, 10, 70, 2, 3, 11, 0, 99, 30, 40, 50 ])
+                \_ -> parse example1 |> VM 0 [] [] 0 |> run |> .memory |> Dict.toList |> List.map second |> equal [ 3500, 9, 10, 70, 2, 3, 11, 0, 99, 30, 40, 50 ]
             , test "Second Example" <|
-                \_ -> parse example2 |> VM 0 [] [] 0 |> run |> .memory |> equal (Array.fromList [ 2, 0, 0, 0, 99 ])
+                \_ -> parse example2 |> VM 0 [] [] 0 |> run |> .memory |> Dict.toList |> List.map second |> equal [ 2, 0, 0, 0, 99 ]
             , test "Third Example" <|
-                \_ -> parse example3 |> VM 0 [] [] 0 |> run |> .memory |> equal (Array.fromList [ 2, 3, 0, 6, 99 ])
+                \_ -> parse example3 |> VM 0 [] [] 0 |> run |> .memory |> Dict.toList |> List.map second |> equal [ 2, 3, 0, 6, 99 ]
             , test "Forth Example" <|
-                \_ -> parse example4 |> VM 0 [] [] 0 |> run |> .memory |> equal (Array.fromList [ 2, 4, 4, 5, 99, 9801 ])
+                \_ -> parse example4 |> VM 0 [] [] 0 |> run |> .memory |> Dict.toList |> List.map second |> equal [ 2, 4, 4, 5, 99, 9801 ]
             , test "Fifth Example" <|
-                \_ -> parse example5 |> VM 0 [] [] 0 |> run |> .memory |> equal (Array.fromList [ 30, 1, 1, 4, 2, 5, 6, 0, 99 ])
+                \_ -> parse example5 |> VM 0 [] [] 0 |> run |> .memory |> Dict.toList |> List.map second |> equal [ 30, 1, 1, 4, 2, 5, 6, 0, 99 ]
             ]
         , describe "Part1 Examples"
             [ test "First Example" <|
                 \_ -> parse example0 |> VM 0 [ 62 ] [] 0 |> run |> .output |> equal [ 62 ]
             , test "Sixth Example" <|
-                \_ -> parse example6 |> VM 0 [] [] 0 |> run |> .memory |> equal (Array.fromList [ 1101, 100, -1, 4, 99 ])
+                \_ -> parse example6 |> VM 0 [] [] 0 |> run |> .memory |> Dict.toList |> List.map second |> equal [ 1101, 100, -1, 4, 99 ]
             , test "Day 2 problem" <|
-                \_ -> parse day2problem |> Array.set 1 12 |> Array.set 2 2 |> VM 0 [] [] 0 |> run |> .memory |> Array.get 0 |> equal (Just 9581917)
+                \_ -> parse day2problem |> Dict.insert 1 12 |> Dict.insert 2 2 |> VM 0 [] [] 0 |> run |> .memory |> Dict.get 0 |> equal (Just 9581917)
             , skip <|
                 test "Problem part 1" <|
                     \_ ->
