@@ -1,7 +1,6 @@
 module Day9Test exposing (..)
 
 import Day5 exposing (..)
-import Day7 exposing (..)
 import Expect exposing (equal)
 import Test exposing (..)
 import Array exposing (toList)
@@ -12,14 +11,10 @@ example1 =
 
 suite : Test
 suite =
-    describe "Day7 Tests"
+    describe "Day9 Tests"
         [ describe "Part 1"
             [ test "Example 1" <|
                 \_ ->
-                    let
-                        p =
-                            example1 |> parse
-                    in
-                    p |> VM 0 [] [] 0 |> .output |> equal (Array.toList p)
+               example1 |> parse |> VM 0 [] [] 0 |> run |> .output |> equal (example1 |> parse |> Array.toList)
             ]
             ]

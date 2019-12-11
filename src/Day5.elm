@@ -33,22 +33,19 @@ type alias AddressDecoder =
 
 
 directDecoder : AddressDecoder
-directDecoder a _ _ =
-    a
+directDecoder address _ _ =
+    address
 
 relativeDecoder : AddressDecoder
-relativeDecoder address base program = Maybe.withDefault -1 <| Array.get (base + address) program
-
+relativeDecoder address base program = Array.get (address) program |> Maybe.map ((+) base) |> Maybe.withDefault -1
 indirectDecoder : AddressDecoder
-indirectDecoder a _ p = relativeDecoder a 0 p
-
+indirectDecoder address _ program = Array.get (address) program |> Maybe.withDefault -1
 
 addressModeDecoder m =
-    if m == 1 then
-        directDecoder
-
-    else
-        indirectDecoder
+    case m of
+      1 -> directDecoder
+      2 -> relativeDecoder
+      _ -> indirectDecoder
 
 
 instructionDecoder : Value -> ( Value, ( AddressDecoder, AddressDecoder, AddressDecoder ) )
@@ -93,23 +90,23 @@ run : VM -> VM
 run vm =
     case instructionDecoder (getVal vm.pc directDecoder vm) of
         -- Add
-        ( 1, ( d1, d2, _ ) ) ->
-            setVal (vm.pc + 3) indirectDecoder (getVal (vm.pc + 1) d1 vm + getVal (vm.pc + 2) d2 vm) vm
+        ( 1, ( d1, d2, d3 ) ) ->
+            setVal (vm.pc + 3) d3 (getVal (vm.pc + 1) d1 vm + getVal (vm.pc + 2) d2 vm) vm
                 |> VM (vm.pc + 4) vm.input vm.output vm.baseOffset
                 |> run
 
         -- Mult
-        ( 2, ( d1, d2, _ ) ) ->
-            setVal (vm.pc + 3) indirectDecoder (getVal (vm.pc + 1) d1 vm * getVal (vm.pc + 2) d2 vm) vm
+        ( 2, ( d1, d2, d3 ) ) ->
+            setVal (vm.pc + 3) d3 (getVal (vm.pc + 1) d1 vm * getVal (vm.pc + 2) d2 vm) vm
                 |> VM (vm.pc + 4) vm.input vm.output vm.baseOffset
                 |> run
 
         -- Input to Parameter 1 (Halt on empty input queue saving program counter)
-        ( 3, ( _, _, _ ) ) ->
+        ( 3, ( d1, _, _ ) ) ->
             List.head vm.input
                 |> Maybe.map
                     (\i ->
-                        setVal (vm.pc + 1) indirectDecoder i vm
+                        setVal (vm.pc + 1) d1  i vm
                             |> VM (vm.pc + 2) (Maybe.withDefault [] (List.tail vm.input)) vm.output vm.baseOffset
                             |> run
                     )
@@ -159,6 +156,9 @@ run vm =
             in
             vm |> setVal (vm.pc + 3) d3 val |> VM (vm.pc + 4) vm.input vm.output vm.baseOffset |> run
 
+        -- Set base offset
+        ( 9, ( d, _, _)) ->
+            {vm | baseOffset = getVal (vm.pc+1) d vm, pc = vm.pc+2 } |> run
         _ ->
             vm
 
