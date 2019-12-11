@@ -25,10 +25,36 @@ problem =
 suite : Test
 suite =
     describe "Day9 Tests"
-        [ describe "Part 1"
+        [ describe "Reddit Tests"
+            [ test "Test 1" <|
+                \_ ->
+                    "109,-1,4,1,99" |> parse |> VM 0 [] [] 0 |> run |> .output |> List.head |> equal (Just -1)
+            , test "Test 2" <|
+                \_ ->
+                    "109, -1, 104, 1, 99" |> parse |> VM 0 [] [] 0 |> run |> .output |> List.head |> equal (Just 1)
+            , test "Test 3" <|
+                \_ ->
+                    "109, -1, 204, 1, 99" |> parse |> VM 0 [] [] 0 |> run |> .output |> List.head |> equal (Just 109)
+            , test "Test 4" <|
+                \_ ->
+                    "109, 1, 9, 2, 204, -6, 99" |> parse |> VM 0 [] [] 0 |> run |> .output |> List.head |> equal (Just 204)
+            , test "Test 5" <|
+                \_ ->
+                    "109, 1, 109, 9, 204, -6, 99" |> parse |> VM 0 [] [] 0 |> run |> .output |> List.head |> equal (Just 204)
+            , test "Test 6" <|
+                \_ ->
+                    "109, 1, 209, -1, 204, -106, 99" |> parse |> VM 0 [] [] 0 |> run |> .output |> List.head |> equal (Just 204)
+            , test "Test 7" <|
+                \_ ->
+                    "109, 1, 3, 3, 204, 2, 99" |> parse |> VM 0 [ 77 ] [] 0 |> run |> .output |> List.head |> equal (Just 77)
+            , test "Test 8" <|
+                \_ ->
+                    "1109, 1, 203, 2, 204, 2, 99" |> parse |> VM 0 [ 77 ] [] 0 |> run |> .output |> List.head |> equal (Just 77)
+            ]
+        , describe "Part 1"
             [ test "Example 1" <|
                 \_ ->
-                    example1 |> parse |> VM 0 [] [] 0 |> run |> .output |> equal (example1 |> parse |> Dict.toList |> List.map Tuple.second)
+                    example1 |> parse |> VM 0 [] [] 0 |> run |> .output |> equal (example1 |> parse |> Dict.toList |> List.map Tuple.second |> List.reverse)
             , test "Example 2" <|
                 \_ ->
                     example2 |> parse |> VM 0 [] [] 0 |> run |> .output |> List.head |> equal (Just 1219070632396864)
@@ -37,6 +63,11 @@ suite =
                     example3 |> parse |> VM 0 [] [] 0 |> run |> .output |> List.head |> equal (Just 1125899906842624)
             , test "problem" <|
                 \_ ->
-                    problem |> parse |> VM 0 [] [] 0 |> run |> .output |> List.head |> equal (Just 0)
+                    problem |> parse |> VM 0 [ 1 ] [] 0 |> run |> .output |> List.head |> equal (Just 2682107844)
+            ]
+        , describe "Part 2"
+            [ test "problem" <|
+                \_ ->
+                    problem |> parse |> VM 0 [ 2 ] [] 0 |> run |> .output |> List.head |> equal (Just 34738)
             ]
         ]

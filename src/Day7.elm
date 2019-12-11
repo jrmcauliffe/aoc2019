@@ -23,7 +23,9 @@ process stages i =
                 out =
                     runWithInput stage i
             in
-            out |> .output |> List.head
+            out
+                |> .output
+                |> List.head
                 |> Maybe.andThen
                     (process
                         (if runComplete out then

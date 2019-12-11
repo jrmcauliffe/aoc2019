@@ -79,7 +79,9 @@ instructionDecoder inst =
 
 parse : String -> Memory
 parse s =
-    String.split "," s
+    s
+        |> String.filter ((/=) ' ')
+        |> String.split ","
         |> List.filterMap (\x -> String.toInt x)
         |> List.indexedMap Tuple.pair
         |> Dict.fromList
@@ -104,46 +106,49 @@ run vm =
     case instructionDecoder (getVal vm.pc directDecoder vm) of
         -- Add
         ( 1, ( d1, d2, d3 ) ) ->
-            setVal (vm.pc + 3) d3 (getVal (vm.pc + 1) d1 vm + getVal (vm.pc + 2) d2 vm) vm
-                |> VM (vm.pc + 4) vm.input vm.output vm.baseOffset
-                |> run
+            run
+                (setVal (vm.pc + 3) d3 (getVal (vm.pc + 1) d1 vm + getVal (vm.pc + 2) d2 vm) vm
+                    |> VM (vm.pc + 4) vm.input vm.output vm.baseOffset
+                )
 
         -- Mult
         ( 2, ( d1, d2, d3 ) ) ->
-            setVal (vm.pc + 3) d3 (getVal (vm.pc + 1) d1 vm * getVal (vm.pc + 2) d2 vm) vm
-                |> VM (vm.pc + 4) vm.input vm.output vm.baseOffset
-                |> run
+            run
+                (setVal (vm.pc + 3) d3 (getVal (vm.pc + 1) d1 vm * getVal (vm.pc + 2) d2 vm) vm
+                    |> VM (vm.pc + 4) vm.input vm.output vm.baseOffset
+                )
 
         -- Input to Parameter 1 (Halt on empty input queue saving program counter)
         ( 3, ( d1, _, _ ) ) ->
             List.head vm.input
                 |> Maybe.map
                     (\i ->
-                        setVal (vm.pc + 1) d1 i vm
-                            |> VM (vm.pc + 2) (Maybe.withDefault [] (List.tail vm.input)) vm.output vm.baseOffset
-                            |> run
+                        run
+                            (setVal (vm.pc + 1) d1 i vm
+                                |> VM (vm.pc + 2) (Maybe.withDefault [] (List.tail vm.input)) vm.output vm.baseOffset
+                            )
                     )
                 |> Maybe.withDefault vm
 
         -- Output Parameter 1
         ( 4, ( d1, _, _ ) ) ->
-            VM (vm.pc + 2) vm.input (getVal (vm.pc + 1) d1 vm :: vm.output) vm.baseOffset vm.memory |> run
+            run (VM (vm.pc + 2) vm.input (getVal (vm.pc + 1) d1 vm :: vm.output) vm.baseOffset vm.memory)
 
         -- Jump-if-true
         ( 5, ( d1, d2, _ ) ) ->
             if getVal (vm.pc + 1) d1 vm /= 0 then
-                VM (getVal (vm.pc + 2) d2 vm) vm.input vm.output vm.baseOffset vm.memory |> run
+                run (VM (getVal (vm.pc + 2) d2 vm) vm.input vm.output vm.baseOffset vm.memory)
 
             else
-                VM (vm.pc + 3) vm.input vm.output vm.baseOffset vm.memory |> run
+                run (VM (vm.pc + 3) vm.input vm.output vm.baseOffset vm.memory)
 
         -- Jump-if-false
         ( 6, ( d1, d2, _ ) ) ->
             if getVal (vm.pc + 1) d1 vm == 0 then
-                VM (getVal (vm.pc + 2) d2 vm) vm.input vm.output vm.baseOffset vm.memory |> run
+                run (VM (getVal (vm.pc + 2) d2 vm) vm.input vm.output vm.baseOffset vm.memory)
 
             else
-                VM (vm.pc + 3) vm.input vm.output vm.baseOffset vm.memory |> run
+                run (VM (vm.pc + 3) vm.input vm.output vm.baseOffset vm.memory)
 
         -- Less than
         ( 7, ( d1, d2, d3 ) ) ->
@@ -155,7 +160,7 @@ run vm =
                     else
                         0
             in
-            vm |> setVal (vm.pc + 3) d3 val |> VM (vm.pc + 4) vm.input vm.output vm.baseOffset |> run
+            run (vm |> setVal (vm.pc + 3) d3 val |> VM (vm.pc + 4) vm.input vm.output vm.baseOffset)
 
         -- Equal
         ( 8, ( d1, d2, d3 ) ) ->
@@ -167,11 +172,11 @@ run vm =
                     else
                         0
             in
-            vm |> setVal (vm.pc + 3) d3 val |> VM (vm.pc + 4) vm.input vm.output vm.baseOffset |> run
+            run (vm |> setVal (vm.pc + 3) d3 val |> VM (vm.pc + 4) vm.input vm.output vm.baseOffset)
 
         -- Set base offset
         ( 9, ( d, _, _ ) ) ->
-            { vm | baseOffset = getVal (vm.pc + 1) d vm, pc = vm.pc + 2 } |> run
+            run { vm | baseOffset = vm.baseOffset + getVal (vm.pc + 1) d vm, pc = vm.pc + 2 }
 
         _ ->
             vm

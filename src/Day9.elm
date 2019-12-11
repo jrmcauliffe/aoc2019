@@ -9,7 +9,8 @@ import Array exposing (..)
 
 type alias Prog =
     { code : Array Value
-    , rb : Int}
+    , rb : Int
+    }
 
 
 type alias Address =
@@ -30,10 +31,13 @@ directDecoder a _ =
 
 
 indirectDecoder : AddressDecoder
-indirectDecoder a p = Array.get a p.code |>  Maybe.withDefault -1
+indirectDecoder a p =
+    Array.get a p.code |> Maybe.withDefault -1
+
 
 relativeDecoder : AddressDecoder
-relativeDecoder a p  = Array.get (a + p.rb) p.code |>  Maybe.withDefault -1
+relativeDecoder a p =
+    Array.get (a + p.rb) p.code |> Maybe.withDefault -1
 
 
 addressModeDecoder m =
@@ -63,8 +67,12 @@ instructionDecoder inst =
 
 
 parse : String -> Prog
-parse s = let code = String.split "," s |> List.filterMap (\x -> String.toInt x) |> Array.fromList in
-          Prog code 0
+parse s =
+    let
+        code =
+            String.split "," s |> List.filterMap (\x -> String.toInt x) |> Array.fromList
+    in
+    Prog code 0
 
 
 getVal : Address -> AddressDecoder -> Prog -> Value
@@ -74,7 +82,7 @@ getVal a d p =
 
 setVal : Address -> AddressDecoder -> Value -> Prog -> Prog
 setVal a d v p =
-    { p | code = "p |> Array.set (d a p.code) v"}
+    { p | code = "p |> Array.set (d a p.code) v" }
 
 
 
