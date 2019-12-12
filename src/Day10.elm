@@ -1,7 +1,7 @@
-module Day10 exposing (bestLocation, parse)
+module Day10 exposing (bestLocation, parse, murderOrder, Asteroid, vector, polar)
 
 import Array exposing (..)
-
+import List.Extra
 
 
 -- https://adventofcode.com/2019/day/10
@@ -43,14 +43,13 @@ parse s =
 
 -- Is the view of b from a occluded by c?
 
+vector : Asteroid -> Asteroid -> Vector
+vector aa bb =
+  { x = bb.x - aa.x, y = bb.y - aa.y }
 
 occludes : Asteroid -> Asteroid -> Asteroid -> Bool
 occludes a b c =
     let
-        vector : Asteroid -> Asteroid -> Vector
-        vector aa bb =
-            { x = bb.x - aa.x, y = bb.y - aa.y }
-
         vb =
             vector a b
 
@@ -68,3 +67,15 @@ bestLocation asteroids =
             rest |> List.map (\b -> rest |> List.filter ((/=) b) |> List.map (occludes a b)) |> List.filter (\q -> not (List.member True q)) |> List.length
     in
     asteroids |> List.map (\a -> asteroids |> List.filter ((/=) a) |> visibleFrom a |> Tuple.pair a) |> List.sortBy Tuple.second |> List.reverse |> List.head
+
+angle : Vector -> Float 
+angle v = let t = atan2 (toFloat (v.x)) (toFloat (v.y)) in if t < 0 then t + 2 * pi else t
+distance : Vector -> Float
+distance v = let x = toFloat(v.x) 
+                 y = toFloat(v.y) in sqrt(x * x + y * y)
+polar : Vector -> (Float, Float)
+polar v = (angle v, distance v)
+
+murderOrder : Asteroid -> List Asteroid -> List Asteroid
+murderOrder base asteroids =
+   asteroids |> List.filter ((/=) base) |> List.map (\a -> (vector a base) |> polar ) |> List.Extra.groupWhile (Tuple.first)
