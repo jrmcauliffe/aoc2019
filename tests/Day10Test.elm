@@ -123,4 +123,23 @@ suite =
                 \_ ->
                     problem |> parse |> bestLocation |> equal (Just ( { x = 22, y = 28 }, 326 ))
             ]
+        , describe "Part 2"
+            [ test "problem" <|
+                \_ ->
+                    let
+                        base =
+                            problem |> parse |> bestLocation |> Maybe.map Tuple.first
+
+                        decode a =
+                            a.x * 100 + a.y
+                    in
+                    base
+                        |> Maybe.map (murderOrder (problem |> parse))
+                        |> Maybe.withDefault []
+                        |> List.take 200
+                        |> List.reverse
+                        |> List.head
+                        |> Maybe.map decode
+                        |> equal (Just 1623)
+            ]
         ]
