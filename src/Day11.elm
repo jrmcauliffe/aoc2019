@@ -84,8 +84,8 @@ writePanel ship panel colour =
     ship |> Dict.insert panel colour
 
 
-inputData : Colour -> VM -> VM
-inputData i vm =
+inputData : VM -> Colour -> VM
+inputData vm i =
     { vm | input = encColour i :: vm.input }
 
 
@@ -141,12 +141,12 @@ rotate r d =
             dir
 
 
-robotLoop : ( Robot, Ship ) -> ( Robot, Ship )
-robotLoop ( r, s ) =
+robotStep : ( Robot, Ship ) -> ( Robot, Ship )
+robotStep ( r, s ) =
     let
         -- input colour
         vmIn =
-            inputData (r.loc |> readPanel s) r.vm |> run
+            r.loc |> readPanel s |> inputData r.vm |> run
 
         -- read output
         vmColour : ( Maybe Colour, VM )
@@ -157,21 +157,25 @@ robotLoop ( r, s ) =
         vmDirection =
             vmColour |> Tuple.second |> outputData |> Tuple.mapFirst (\x -> Maybe.map decRotation x)
 
+        -- paint ship
         paintedShip : Maybe Ship
         paintedShip =
             vmColour |> Tuple.first |> Maybe.map (writePanel s r.loc)
 
-        movedRobot : Maybe Robot
-        movedRobot =
-            vmDirection |> Tuple.first |> Maybe.map (\rot -> { r | dir = rotate rot r.dir, loc = move (rotate rot r.dir) r.loc, vm = vmDirection |> Tuple.second })
+        -- rotate robot
+        rotatedRobot : Maybe Robot
+        rotatedRobot = vmDirection |> Tuple.first |> Maybe.map (\rot -> {r | dir = rotate rot r.dir, vm = vmDirection |> Tuple.second})
 
-        next : ( Robot, Ship )
-        next =
-            Maybe.map2 (\nr ns -> ( nr, ns )) movedRobot paintedShip |> Maybe.withDefault ( r, s )
+        -- move robot
+        movedRobot : Maybe Robot
+        movedRobot = rotatedRobot |> Maybe.map (\rr -> { rr | loc = move rr.dir rr.loc})
     in
+    Maybe.map2 (\nr ns -> ( nr, ns )) movedRobot paintedShip |> Maybe.withDefault ( r, s )
+    
+robotLoop : ( Robot, Ship ) -> ( Robot, Ship )
+robotLoop next = 
     if next |> Tuple.first |> .vm |> runComplete then
         next
-
     else
         robotLoop next
 
@@ -191,4 +195,4 @@ panelsPainted prog =
         ship =
             Dict.singleton ( 0, 0 ) Black
     in
-    ( robot, ship ) |> robotLoop |> Tuple.second |> Dict.toList |> List.length
+    ( robot, ship ) |> robotLoop |> Tuple.second |> Dict.size
